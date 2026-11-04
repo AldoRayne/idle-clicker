@@ -1,0 +1,17 @@
+@use 'sass:math';
+@use 'variables' as *;
+
+@function strip-units($number) {
+    @return math.div($number, $number * 0 + 1);
+}
+
+@function r($pxval) {
+    @if not math.is-unitless($pxval) {
+        $pxval: strip-units($pxval);
+    }
+    $base: $fontSizeBase;
+    @if not math.is-unitless($base) {
+        $base: strip-units($base);
+    }
+    @return math.div($pxval, $base) * 1rem;
+}

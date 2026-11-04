@@ -1,0 +1,64 @@
+@use 'variables' as *;
+@use 'functions' as *;
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    background: #060a18;
+    overflow: hidden;
+}
+
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-image: url('assets/stars.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.asteroid {
+    position: absolute;
+    width: r(60);
+    height: r(60);
+    transform: translate(-50%, -50%);
+    background-color: #3a3f55;
+    border-radius: 50%;
+    border: r(3) solid #9aa7b5;
+    cursor: pointer;
+
+    //colors
+    &.copper {
+        background-color: #6b3a1f;
+        border-color: #d9803f;
+    }
+
+    &.ice {
+        background-color: #1f4f66;
+        border-color: #7fd6f5;
+    }
+
+    &.gold {
+        background-color: #6b5418;
+        border-color: #f2c94c;
+    }
+
+    &.small {
+        width: r(44);
+        height: r(44);
+    }
+
+    //sizes
+    &.medium {
+        width: r(52);
+        height: r(52);
+    }
+
+    .large {
+        width: r(68);
+        height: r(68);
+    }
+}
