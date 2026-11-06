@@ -16,6 +16,9 @@ window.addEventListener('DOMContentLoaded', () => {
         shopDrill: document.getElementById('shop-drill'),
         shopDrillLevel: document.getElementById('shop-drill-level'),
         shopDrillCost: document.getElementById('shop-drill-cost'),
+        shopDrone: document.getElementById('shop-drone'),
+        shopDroneCount: document.getElementById('shop-drone-count'),
+        shopDroneCost: document.getElementById('shop-drone-cost'),
         cargo: {
             iron: document.getElementById('hud-cargo-iron'),
             copper: document.getElementById('hud-cargo-copper'),
@@ -31,10 +34,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const START_STORAGE_CAPACITY = 50;
     const START_DRILL_POWER = 1;
     const STORAGE_UPGRADE_STEP = 25;
+    const DRONE_ORE_PER_SECOND = 0.5;
 
     const UPGRADES = {
         storage: { baseCost: 100, costMultiplier: 1.5 },
         drill: { baseCost: 75, costMultiplier: 2.2 },
+        drone: { baseCost: 150, costMultiplier: 1.6 },
     };
 
     const ORE_PRICES = {
@@ -70,9 +75,12 @@ window.addEventListener('DOMContentLoaded', () => {
         credits: 0,
         storageCapacity: START_STORAGE_CAPACITY,
         drillPower: START_DRILL_POWER,
+        drones: 0,
+        droneProgress: 0,
         upgradeLevels: {
             storage: 0,
             drill: 0,
+            drone: 0,
         },
         cargo: {
             iron: 0,
@@ -197,6 +205,34 @@ window.addEventListener('DOMContentLoaded', () => {
         renderHud();
     }
 
+    function buyDrone() {
+        if (!payForUpgrade('drone')) return;
+
+        state.drones += 1;
+        renderHud();
+    }
+
+    function runDrones(deltaTime) {
+        if (state.drones === 0) return;
+
+        if (isStorageFull()) {
+            state.droneProgress = 0;
+            return;
+        }
+
+        state.droneProgress += state.drones * DRONE_ORE_PER_SECOND * deltaTime;
+
+        if (state.droneProgress < 1) return;
+
+        while (state.droneProgress >= 1 && !isStorageFull()) {
+            const type = getRandomWeightedKey(ASTEROID_TYPE_WEIGHTS);
+            state.cargo[type] += 1;
+            state.droneProgress -= 1;
+        }
+
+        renderHud();
+    }
+
     function spawnAsteroid({ type, size, x, y, speedX, speedY }) {
         const asteroid = {
             type,
@@ -317,6 +353,10 @@ window.addEventListener('DOMContentLoaded', () => {
         hud.shopDrillCost.textContent = getUpgradeCost('drill');
         hud.shopDrill.disabled = !canAffordUpgrade('drill');
 
+        hud.shopDroneCount.textContent = state.drones;
+        hud.shopDroneCost.textContent = getUpgradeCost('drone');
+        hud.shopDrone.disabled = !canAffordUpgrade('drone');
+
         app.classList.toggle('is-storage-full', isStorageFull());
     }
 
@@ -327,6 +367,7 @@ window.addEventListener('DOMContentLoaded', () => {
         lastFrameTime = now;
 
         moveAsteroids(deltaTime);
+        runDrones(deltaTime);
 
         requestAnimationFrame(gameLoop);
     }
@@ -338,6 +379,7 @@ window.addEventListener('DOMContentLoaded', () => {
     hud.sell.addEventListener('click', sellAllCargo);
     hud.shopStorage.addEventListener('click', buyStorageUpgrade);
     hud.shopDrill.addEventListener('click', buyDrillUpgrade);
+    hud.shopDrone.addEventListener('click', buyDrone);
 
     renderHud();
     requestAnimationFrame(gameLoop);

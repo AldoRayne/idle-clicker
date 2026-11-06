@@ -67,10 +67,6 @@ body {
     }
 }
 
-#app.is-storage-full .asteroid {
-    cursor: not-allowed;
-}
-
 .hud {
     position: absolute;
     top: r(16);
@@ -136,7 +132,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: r(8);
-    width: r(200);
+    min-width: r(200);
     font-family: system-ui, sans-serif;
     font-size: r(16);
     color: #fff;
@@ -152,10 +148,20 @@ body {
         font-size: r(13);
         opacity: 0.7;
     }
+
+    &__title {
+        white-space: nowrap;
+    }
 }
 
-#app.is-storage-full .hud__storage-total {
-    color: #ff6b6b;
+#app.is-storage-full {
+    .asteroid {
+        cursor: not-allowed;
+    }
+
+    .hud__storage-total {
+        color: $colorWarning;
+    }
 }
 
 @keyframes hud-warning {

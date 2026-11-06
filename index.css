@@ -115,7 +115,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  width: 12.5rem;
+  min-width: 12.5rem;
   font-family: system-ui, sans-serif;
   font-size: 1rem;
   color: #fff;
@@ -129,6 +129,9 @@ body {
 .shop__info {
   font-size: 0.8125rem;
   opacity: 0.7;
+}
+.shop__title {
+  white-space: nowrap;
 }
 
 #app.is-storage-full .hud__storage-total {
