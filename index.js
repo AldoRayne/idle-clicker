@@ -10,6 +10,12 @@ window.addEventListener('DOMContentLoaded', () => {
         storageCapacity: document.getElementById('hud-storage-capacity'),
         sell: document.getElementById('hud-sell'),
         sellValue: document.getElementById('hud-sell-value'),
+        shopStorage: document.getElementById('shop-storage'),
+        shopStorageLevel: document.getElementById('shop-storage-level'),
+        shopStorageCost: document.getElementById('shop-storage-cost'),
+        shopDrill: document.getElementById('shop-drill'),
+        shopDrillLevel: document.getElementById('shop-drill-level'),
+        shopDrillCost: document.getElementById('shop-drill-cost'),
         cargo: {
             iron: document.getElementById('hud-cargo-iron'),
             copper: document.getElementById('hud-cargo-copper'),
@@ -23,6 +29,13 @@ window.addEventListener('DOMContentLoaded', () => {
     if (isHudMissing) return;
 
     const START_STORAGE_CAPACITY = 50;
+    const START_DRILL_POWER = 1;
+    const STORAGE_UPGRADE_STEP = 25;
+
+    const UPGRADES = {
+        storage: { baseCost: 100, costMultiplier: 1.5 },
+        drill: { baseCost: 75, costMultiplier: 1.7 },
+    };
 
     const ORE_PRICES = {
         iron: 1,
@@ -50,6 +63,11 @@ window.addEventListener('DOMContentLoaded', () => {
         asteroids: [],
         credits: 0,
         storageCapacity: START_STORAGE_CAPACITY,
+        drillPower: START_DRILL_POWER,
+        upgradeLevels: {
+            storage: 0,
+            drill: 0,
+        },
         cargo: {
             iron: 0,
             copper: 0,
@@ -61,6 +79,7 @@ window.addEventListener('DOMContentLoaded', () => {
     function getRandomItem(items) {
         return items[Math.floor(Math.random() * items.length)];
     }
+
 
     function getRandomNumber(min, max) {
         return min + Math.random() * (max - min);
@@ -129,6 +148,37 @@ window.addEventListener('DOMContentLoaded', () => {
         renderHud();
     }
 
+    function getUpgradeCost(name) {
+        const { baseCost, costMultiplier } = UPGRADES[name];
+        return Math.round(baseCost * costMultiplier ** state.upgradeLevels[name]);
+    }
+
+    function canAffordUpgrade(name) {
+        return state.credits >= getUpgradeCost(name);
+    }
+
+    function payForUpgrade(name) {
+        if (!canAffordUpgrade(name)) return false;
+
+        state.credits -= getUpgradeCost(name);
+        state.upgradeLevels[name] += 1;
+        return true;
+    }
+
+    function buyStorageUpgrade() {
+        if (!payForUpgrade('storage')) return;
+
+        state.storageCapacity += STORAGE_UPGRADE_STEP;
+        renderHud();
+    }
+
+    function buyDrillUpgrade() {
+        if (!payForUpgrade('drill')) return;
+
+        state.drillPower += 1;
+        renderHud();
+    }
+
     function spawnAsteroid({ type, size, x, y, speedX, speedY }) {
         const asteroid = {
             type,
@@ -177,8 +227,11 @@ window.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        asteroid.hp -= 1;
-        state.cargo[asteroid.type] += 1;
+        const freeSpace = state.storageCapacity - getCargoTotal();
+        const minedAmount = Math.min(state.drillPower, asteroid.hp, freeSpace);
+
+        asteroid.hp -= minedAmount;
+        state.cargo[asteroid.type] += minedAmount;
         renderHud();
 
         if (asteroid.hp <= 0) {
@@ -238,6 +291,14 @@ window.addEventListener('DOMContentLoaded', () => {
         hud.sellValue.textContent = getCargoValue();
         hud.sell.disabled = getCargoTotal() === 0;
 
+        hud.shopStorageLevel.textContent = state.upgradeLevels.storage;
+        hud.shopStorageCost.textContent = getUpgradeCost('storage');
+        hud.shopStorage.disabled = !canAffordUpgrade('storage');
+
+        hud.shopDrillLevel.textContent = state.upgradeLevels.drill;
+        hud.shopDrillCost.textContent = getUpgradeCost('drill');
+        hud.shopDrill.disabled = !canAffordUpgrade('drill');
+
         app.classList.toggle('is-storage-full', isStorageFull());
     }
 
@@ -257,6 +318,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     hud.sell.addEventListener('click', sellAllCargo);
+    hud.shopStorage.addEventListener('click', buyStorageUpgrade);
+    hud.shopDrill.addEventListener('click', buyDrillUpgrade);
 
     renderHud();
     requestAnimationFrame(gameLoop);
