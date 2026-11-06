@@ -30,20 +30,20 @@ body {
 
     background-image: url('assets/asteroid.png');
     background-size: cover;
-    background-color: #9aa7b5;
+    background-color: $colorIron;
     background-blend-mode: multiply;
 
     //colors
     &.copper {
-        background-color: #d9803f;
+        background-color: $colorCopper;
     }
 
     &.ice {
-        background-color: #7fd6f5;
+        background-color: $colorIce;
     }
 
     &.gold {
-        background-color: #f2c94c;
+        background-color: $colorGold;
     }
 
     //sizes
