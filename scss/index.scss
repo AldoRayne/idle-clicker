@@ -38,12 +38,12 @@ body {
         background-color: $colorCopper;
     }
 
-    &.ice {
-        background-color: $colorIce;
-    }
-
     &.gold {
         background-color: $colorGold;
+    }
+
+    &.diamond {
+        background-color: $colorDiamond;
     }
 
     //sizes
@@ -77,24 +77,58 @@ body {
     left: r(16);
     z-index: 10;
     display: flex;
+    align-items: flex-start;
     gap: r(12);
     font-family: system-ui, sans-serif;
     font-size: r(16);
     color: #fff;
-}
 
-.hud__item {
-    padding: r(8) r(14);
-    background-color: rgba(6, 10, 24, 0.75);
-    border: r(1) solid rgba(255, 255, 255, 0.15);
-    border-radius: r(8);
+    &__item {
+        padding: r(8) r(14);
+        background-color: rgba(6, 10, 24, 0.75);
+        border: r(1) solid rgba(255, 255, 255, 0.15);
+        border-radius: r(8);
 
-    &.is-warning {
-        animation: hud-warning 0.4s ease-out;
+        &.is-warning {
+            animation: hud-warning 0.4s ease-out;
+        }
+    }
+
+    &__cargo {
+        display: flex;
+        gap: r(14);
+        margin-top: r(6);
+        font-size: r(14);
+    }
+
+    &__ore {
+        display: flex;
+        align-items: center;
+        gap: r(4);
+    }
+
+    &__ore-icon {
+        width: r(20);
+        height: r(20);
+    }
+
+    &__button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            background-color: rgba(40, 60, 110, 0.85);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
     }
 }
 
-#app.is-storage-full #hud-storage {
+#app.is-storage-full .hud__storage-total {
     color: #ff6b6b;
 }
 

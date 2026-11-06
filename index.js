@@ -8,13 +8,28 @@ window.addEventListener('DOMContentLoaded', () => {
         storage: document.getElementById('hud-storage'),
         storageUsed: document.getElementById('hud-storage-used'),
         storageCapacity: document.getElementById('hud-storage-capacity'),
+        sell: document.getElementById('hud-sell'),
+        sellValue: document.getElementById('hud-sell-value'),
+        cargo: {
+            iron: document.getElementById('hud-cargo-iron'),
+            copper: document.getElementById('hud-cargo-copper'),
+            gold: document.getElementById('hud-cargo-gold'),
+            diamond: document.getElementById('hud-cargo-diamond'),
+        },
     };
 
-    const isHudMissing = Object.values(hud).some((element) => !element);
+    const isHudMissing = [...Object.values(hud), ...Object.values(hud.cargo)].some((element) => !element);
 
     if (isHudMissing) return;
 
     const START_STORAGE_CAPACITY = 50;
+
+    const ORE_PRICES = {
+        iron: 1,
+        copper: 3,
+        gold: 5,
+        diamond: 15,
+    };
 
     const ASTEROID_HP = {
         small: 3,
@@ -22,14 +37,14 @@ window.addEventListener('DOMContentLoaded', () => {
         large: 8,
     };
 
-    const ASTEROID_TYPES = ['iron', 'copper', 'ice', 'gold'];
+    const ASTEROID_TYPES = ['iron', 'copper', 'gold', 'diamond'];
     const ASTEROID_SIZES = ['small', 'medium', 'large'];
     const ASTEROID_RESPAWN_DELAY_MS = 1500;
     const ASTEROID_COUNT = 6;
-    const ASTEROID_OFFSCREEN_MARGIN = 50;
     const ASTEROID_SPEED = { min: 40, max: 60 };
-    const ASTEROID_TARGET_PADDING = 0.2;
     const MAX_FRAME_TIME = 0.1;
+    const ASTEROID_OFFSCREEN_MARGIN = 50;
+    const ASTEROID_TARGET_PADDING = 0.2;
 
     const state = {
         asteroids: [],
@@ -38,26 +53,10 @@ window.addEventListener('DOMContentLoaded', () => {
         cargo: {
             iron: 0,
             copper: 0,
-            ice: 0,
             gold: 0,
+            diamond: 0,
         },
     };
-
-    function spawnAsteroid({ type, size, x, y, speedX, speedY }) {
-        const asteroid = {
-            type,
-            size,
-            x,
-            y,
-            speedX,
-            speedY,
-            hp: ASTEROID_HP[size],
-            el: null,
-        };
-
-        state.asteroids.push(asteroid);
-        renderNewAsteroid(asteroid);
-    }
 
     function getRandomItem(items) {
         return items[Math.floor(Math.random() * items.length)];
@@ -97,6 +96,55 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    function isAsteroidOutsideFlightArea(asteroid) {
+        const area = getFlightArea();
+
+        return (
+            asteroid.x < area.left ||
+            asteroid.x > area.right ||
+            asteroid.y < area.top ||
+            asteroid.y > area.bottom
+        );
+    }
+
+    function getCargoTotal() {
+        return Object.values(state.cargo).reduce((sum, amount) => sum + amount, 0);
+    }
+
+    function isStorageFull() {
+        return getCargoTotal() >= state.storageCapacity;
+    }
+
+    function getCargoValue() {
+        return Object.entries(state.cargo).reduce((sum, [type, amount]) => sum + amount * ORE_PRICES[type], 0);
+    }
+
+    function sellAllCargo() {
+        state.credits += getCargoValue();
+
+        Object.keys(state.cargo).forEach((type) => {
+            state.cargo[type] = 0;
+        });
+
+        renderHud();
+    }
+
+    function spawnAsteroid({ type, size, x, y, speedX, speedY }) {
+        const asteroid = {
+            type,
+            size,
+            x,
+            y,
+            speedX,
+            speedY,
+            hp: ASTEROID_HP[size],
+            el: null,
+        };
+
+        state.asteroids.push(asteroid);
+        renderNewAsteroid(asteroid);
+    }
+
     function spawnRandomAsteroid() {
         const start = getRandomSpawnPoint();
         const target = getRandomTargetPoint();
@@ -113,17 +161,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function isAsteroidOutsideFlightArea(asteroid) {
-        const area = getFlightArea();
-
-        return (
-            asteroid.x < area.left ||
-            asteroid.x > area.right ||
-            asteroid.y < area.top ||
-            asteroid.y > area.bottom
-        );
-    }
-
     function moveAsteroids(deltaTime) {
         state.asteroids.forEach((asteroid) => {
             asteroid.x += asteroid.speedX * deltaTime;
@@ -132,14 +169,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
 
         state.asteroids.filter(isAsteroidOutsideFlightArea).forEach(destroyAsteroid);
-    }
-
-    function getCargoTotal() {
-        return Object.values(state.cargo).reduce((sum, amount) => sum + amount, 0);
-    }
-
-    function isStorageFull() {
-        return getCargoTotal() >= state.storageCapacity;
     }
 
     function hitAsteroid(asteroid) {
@@ -167,6 +196,12 @@ window.addEventListener('DOMContentLoaded', () => {
         setTimeout(spawnRandomAsteroid, ASTEROID_RESPAWN_DELAY_MS);
     }
 
+    function restartAnimation(el, className) {
+        el.classList.remove(className);
+        void el.offsetWidth;
+        el.classList.add(className);
+    }
+
     function renderNewAsteroid(asteroid) {
         const el = document.createElement('div');
         el.className = `asteroid ${asteroid.type} ${asteroid.size}`;
@@ -183,12 +218,6 @@ window.addEventListener('DOMContentLoaded', () => {
         asteroid.el.style.top = `${asteroid.y}px`;
     }
 
-    function restartAnimation(el, className) {
-        el.classList.remove(className);
-        void el.offsetWidth;
-        el.classList.add(className);
-    }
-
     function renderAsteroidHit(asteroid) {
         restartAnimation(asteroid.el, 'is-hit');
     }
@@ -201,6 +230,13 @@ window.addEventListener('DOMContentLoaded', () => {
         hud.credits.textContent = state.credits;
         hud.storageUsed.textContent = getCargoTotal();
         hud.storageCapacity.textContent = state.storageCapacity;
+
+        Object.entries(state.cargo).forEach(([type, amount]) => {
+            hud.cargo[type].textContent = amount;
+        });
+
+        hud.sellValue.textContent = getCargoValue();
+        hud.sell.disabled = getCargoTotal() === 0;
 
         app.classList.toggle('is-storage-full', isStorageFull());
     }
@@ -219,6 +255,8 @@ window.addEventListener('DOMContentLoaded', () => {
     for (let i = 0; i < ASTEROID_COUNT; i++) {
         setTimeout(spawnRandomAsteroid, i * ASTEROID_RESPAWN_DELAY_MS);
     }
+
+    hud.sell.addEventListener('click', sellAllCargo);
 
     renderHud();
     requestAnimationFrame(gameLoop);
