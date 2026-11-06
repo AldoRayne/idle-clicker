@@ -25,39 +25,39 @@ body {
     width: r(60);
     height: r(60);
     transform: translate(-50%, -50%);
-    background-color: #3a3f55;
     border-radius: 50%;
-    border: r(3) solid #9aa7b5;
     cursor: pointer;
+
+    background-image: url('assets/asteroid.png');
+    background-size: cover;
+    background-color: #9aa7b5;
+    background-blend-mode: multiply;
 
     //colors
     &.copper {
-        background-color: #6b3a1f;
-        border-color: #d9803f;
+        background-color: #d9803f;
     }
 
     &.ice {
-        background-color: #1f4f66;
-        border-color: #7fd6f5;
+        background-color: #7fd6f5;
     }
 
     &.gold {
-        background-color: #6b5418;
-        border-color: #f2c94c;
+        background-color: #f2c94c;
     }
 
+    //sizes
     &.small {
         width: r(44);
         height: r(44);
     }
 
-    //sizes
     &.medium {
         width: r(52);
         height: r(52);
     }
 
-    .large {
+    &.large {
         width: r(68);
         height: r(68);
     }

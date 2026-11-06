@@ -22,22 +22,21 @@ body {
   width: 3.75rem;
   height: 3.75rem;
   transform: translate(-50%, -50%);
-  background-color: #3a3f55;
   border-radius: 50%;
-  border: 0.1875rem solid #9aa7b5;
   cursor: pointer;
+  background-image: url("assets/asteroid.png");
+  background-size: cover;
+  background-color: #9aa7b5;
+  background-blend-mode: multiply;
 }
 .asteroid.copper {
-  background-color: #6b3a1f;
-  border-color: #d9803f;
+  background-color: #d9803f;
 }
 .asteroid.ice {
-  background-color: #1f4f66;
-  border-color: #7fd6f5;
+  background-color: #7fd6f5;
 }
 .asteroid.gold {
-  background-color: #6b5418;
-  border-color: #f2c94c;
+  background-color: #f2c94c;
 }
 .asteroid.small {
   width: 2.75rem;
@@ -47,7 +46,7 @@ body {
   width: 3.25rem;
   height: 3.25rem;
 }
-.asteroid .large {
+.asteroid.large {
   width: 4.25rem;
   height: 4.25rem;
 }
