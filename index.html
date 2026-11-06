@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="uk">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +7,12 @@
         <link rel="stylesheet" href="index.css" />
     </head>
     <body>
-        <div id="app"></div>
+        <div id="app">
+            <div class="hud">
+                <div class="hud__item">Кредити: <span id="hud-credits">0</span></div>
+                <div class="hud__item" id="hud-storage">Склад: <span id="hud-storage-used">0</span> / <span id="hud-storage-capacity">0</span></div>
+            </div>
+        </div>
         <script src="index.js"></script>
     </body>
 </html>

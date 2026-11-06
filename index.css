@@ -54,6 +54,44 @@ body {
   animation: asteroid-hit 0.15s ease-out;
 }
 
+#app.is-storage-full .asteroid {
+  cursor: not-allowed;
+}
+
+.hud {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.75rem;
+  font-family: system-ui, sans-serif;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.hud__item {
+  padding: 0.5rem 0.875rem;
+  background-color: rgba(6, 10, 24, 0.75);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.5rem;
+}
+.hud__item.is-warning {
+  animation: hud-warning 0.4s ease-out;
+}
+
+#app.is-storage-full #hud-storage {
+  color: #ff6b6b;
+}
+
+@keyframes hud-warning {
+  from {
+    background-color: rgba(255, 80, 80, 0.6);
+  }
+  to {
+    background-color: rgba(6, 10, 24, 0.75);
+  }
+}
 @keyframes asteroid-hit {
   from {
     filter: brightness(2);

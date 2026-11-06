@@ -3,6 +3,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (!app) return;
 
+    const hud = {
+        credits: document.getElementById('hud-credits'),
+        storage: document.getElementById('hud-storage'),
+        storageUsed: document.getElementById('hud-storage-used'),
+        storageCapacity: document.getElementById('hud-storage-capacity'),
+    };
+
+    const isHudMissing = Object.values(hud).some((element) => !element);
+
+    if (isHudMissing) return;
+
+    const START_STORAGE_CAPACITY = 50;
+
     const ASTEROID_HP = {
         small: 3,
         medium: 5,
@@ -19,6 +32,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const state = {
         asteroids: [],
+        credits: 0,
+        storageCapacity: START_STORAGE_CAPACITY,
+        cargo: {
+            iron: 0,
+            copper: 0,
+            ice: 0,
+            gold: 0,
+        },
     };
 
     function spawnAsteroid({ type, size, x, y }) {
@@ -35,8 +56,23 @@ window.addEventListener('DOMContentLoaded', () => {
         renderNewAsteroid(asteroid);
     }
 
+    function getCargoTotal() {
+        return Object.values(state.cargo).reduce((sum, amount) => sum + amount, 0);
+    }
+
+    function isStorageFull() {
+        return getCargoTotal() >= state.storageCapacity;
+    }
+
     function hitAsteroid(asteroid) {
+        if (isStorageFull()) {
+            renderStorageWarning();
+            return;
+        }
+
         asteroid.hp -= 1;
+        state.cargo[asteroid.type] += 1;
+        renderHud();
 
         if (asteroid.hp <= 0) {
             destroyAsteroid(asteroid);
@@ -63,11 +99,28 @@ window.addEventListener('DOMContentLoaded', () => {
         app.appendChild(el);
     }
 
+    function restartAnimation(el, className) {
+        el.classList.remove(className);
+        void el.offsetWidth;
+        el.classList.add(className);
+    }
+
     function renderAsteroidHit(asteroid) {
-        asteroid.el.classList.remove('is-hit');
-        void asteroid.el.offsetWidth;
-        asteroid.el.classList.add('is-hit');
+        restartAnimation(asteroid.el, 'is-hit');
+    }
+
+    function renderStorageWarning() {
+        restartAnimation(hud.storage, 'is-warning');
+    }
+
+    function renderHud() {
+        hud.credits.textContent = state.credits;
+        hud.storageUsed.textContent = getCargoTotal();
+        hud.storageCapacity.textContent = state.storageCapacity;
+
+        app.classList.toggle('is-storage-full', isStorageFull());
     }
 
     START_ASTEROIDS.forEach(spawnAsteroid);
+    renderHud();
 });

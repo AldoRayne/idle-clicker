@@ -67,6 +67,47 @@ body {
     }
 }
 
+#app.is-storage-full .asteroid {
+    cursor: not-allowed;
+}
+
+.hud {
+    position: absolute;
+    top: r(16);
+    left: r(16);
+    z-index: 10;
+    display: flex;
+    gap: r(12);
+    font-family: system-ui, sans-serif;
+    font-size: r(16);
+    color: #fff;
+}
+
+.hud__item {
+    padding: r(8) r(14);
+    background-color: rgba(6, 10, 24, 0.75);
+    border: r(1) solid rgba(255, 255, 255, 0.15);
+    border-radius: r(8);
+
+    &.is-warning {
+        animation: hud-warning 0.4s ease-out;
+    }
+}
+
+#app.is-storage-full #hud-storage {
+    color: #ff6b6b;
+}
+
+@keyframes hud-warning {
+    from {
+        background-color: rgba(255, 80, 80, 0.6);
+    }
+
+    to {
+        background-color: rgba(6, 10, 24, 0.75);
+    }
+}
+
 @keyframes asteroid-hit {
     from {
         filter: brightness(2);
