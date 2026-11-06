@@ -34,7 +34,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const UPGRADES = {
         storage: { baseCost: 100, costMultiplier: 1.5 },
-        drill: { baseCost: 75, costMultiplier: 1.7 },
+        drill: { baseCost: 75, costMultiplier: 2.2 },
     };
 
     const ORE_PRICES = {
@@ -50,7 +50,13 @@ window.addEventListener('DOMContentLoaded', () => {
         large: 8,
     };
 
-    const ASTEROID_TYPES = ['iron', 'copper', 'gold', 'diamond'];
+    const ASTEROID_TYPE_WEIGHTS = {
+        iron: 50,
+        copper: 30,
+        gold: 15,
+        diamond: 5,
+    };
+
     const ASTEROID_SIZES = ['small', 'medium', 'large'];
     const ASTEROID_RESPAWN_DELAY_MS = 1500;
     const ASTEROID_COUNT = 6;
@@ -80,6 +86,18 @@ window.addEventListener('DOMContentLoaded', () => {
         return items[Math.floor(Math.random() * items.length)];
     }
 
+    function getRandomWeightedKey(weights) {
+        const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
+        let roll = Math.random() * totalWeight;
+
+        for (const [key, weight] of Object.entries(weights)) {
+            roll -= weight;
+
+            if (roll < 0) return key;
+        }
+
+        return Object.keys(weights)[0];
+    }
 
     function getRandomNumber(min, max) {
         return min + Math.random() * (max - min);
@@ -202,7 +220,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const speed = getRandomNumber(ASTEROID_SPEED.min, ASTEROID_SPEED.max);
 
         spawnAsteroid({
-            type: getRandomItem(ASTEROID_TYPES),
+            type: getRandomWeightedKey(ASTEROID_TYPE_WEIGHTS),
             size: getRandomItem(ASTEROID_SIZES),
             x: start.x,
             y: start.y,
