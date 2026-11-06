@@ -61,4 +61,18 @@ body {
         width: r(68);
         height: r(68);
     }
+
+    &.is-hit {
+        animation: asteroid-hit 0.15s ease-out;
+    }
+}
+
+@keyframes asteroid-hit {
+    from {
+        filter: brightness(2);
+    }
+
+    to {
+        filter: brightness(1);
+    }
 }

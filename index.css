@@ -50,3 +50,15 @@ body {
   width: 4.25rem;
   height: 4.25rem;
 }
+.asteroid.is-hit {
+  animation: asteroid-hit 0.15s ease-out;
+}
+
+@keyframes asteroid-hit {
+  from {
+    filter: brightness(2);
+  }
+  to {
+    filter: brightness(1);
+  }
+}
