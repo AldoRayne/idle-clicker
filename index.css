@@ -196,13 +196,47 @@ body {
   .shop {
     top: auto;
     right: 0.5rem;
-    bottom: 0.5rem;
+    bottom: 2.875rem;
     left: 0.5rem;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.375rem;
     min-width: 0;
     font-size: 0.8125rem;
+  }
+}
+.shop.is-collapsed .shop__body {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+.shop__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.shop__toggle-icon {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.25rem;
+  border-right: 0.125rem solid currentColor;
+  border-bottom: 0.125rem solid currentColor;
+  transform: rotate(-135deg);
+  transition: transform 0.2s ease-out;
+}
+.shop.is-collapsed .shop__toggle-icon {
+  margin-top: -0.25rem;
+  transform: rotate(45deg);
+}
+.shop__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+@media only screen and (max-width: 767px) {
+  .shop__body {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.375rem;
   }
 }
 .shop__button {
@@ -226,6 +260,23 @@ body {
 @media only screen and (max-width: 767px) {
   .shop__title {
     white-space: normal;
+  }
+}
+
+.new-game {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 10;
+  padding: 0.375rem 0.75rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: #fff;
+}
+@media only screen and (max-width: 767px) {
+  .new-game {
+    right: 0.5rem;
+    bottom: 0.5rem;
   }
 }
 

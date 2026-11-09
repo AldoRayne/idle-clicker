@@ -12,6 +12,9 @@ window.addEventListener('DOMContentLoaded', () => {
         sellValue: document.getElementById('hud-sell-value'),
         location: document.getElementById('hud-location'),
         locationName: document.getElementById('hud-location-name'),
+        shop: document.getElementById('shop'),
+        shopToggle: document.getElementById('shop-toggle'),
+        newGame: document.getElementById('new-game'),
         shopStorage: document.getElementById('shop-storage'),
         shopStorageLevel: document.getElementById('shop-storage-level'),
         shopStorageCost: document.getElementById('shop-storage-cost'),
@@ -132,6 +135,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const ASTEROID_COUNT = 6;
     const ASTEROID_SPEED = { min: 40, max: 60 };
     const MAX_FRAME_TIME = 0.1;
+    const SAVE_KEY = 'space-mine-save';
     const ASTEROID_OFFSCREEN_MARGIN = 50;
     const ASTEROID_TARGET_PADDING = 0.2;
 
@@ -162,6 +166,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const locationButtons = [];
     let locationsSlider = null;
     let sellPanelOreType = null;
+    let isShopCollapsed = false;
 
     function getRandomItem(items) {
         return items[Math.floor(Math.random() * items.length)];
@@ -559,7 +564,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     <h2 class="locations__name">${location.name}</h2>
                     <p class="locations__stats">Міцність астероїдів ×${location.hpMultiplier} · Швидкість ×${location.speedMultiplier}</p>
                     <div class="locations__ores">${getOreChancesHtml(location.oreWeights)}</div>
-                    <button class="hud__item hud__button locations__action" type="button"></button>
+                    <button class="hud__item hud__button locations__action"></button>
                 </div>
             `;
 
@@ -649,6 +654,67 @@ window.addEventListener('DOMContentLoaded', () => {
         hud.orderSkip.disabled = !canSkipOrder();
     }
 
+    function saveGame() {
+        const saveData = {
+            credits: state.credits,
+            storageCapacity: state.storageCapacity,
+            drillPower: state.drillPower,
+            drones: state.drones,
+            locationIndex: state.locationIndex,
+            unlockedLocationIds: state.unlockedLocationIds,
+            order: state.order,
+            upgradeLevels: state.upgradeLevels,
+            cargo: state.cargo,
+        };
+
+        try {
+            localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+        } catch {
+            return;
+        }
+    }
+
+    function loadGame() {
+        let saveData = null;
+
+        try {
+            saveData = JSON.parse(localStorage.getItem(SAVE_KEY));
+        } catch {
+            return;
+        }
+
+        if (!saveData) return;
+
+        const { upgradeLevels, cargo, ...simpleValues } = saveData;
+
+        Object.assign(state, simpleValues);
+        Object.assign(state.upgradeLevels, upgradeLevels);
+        Object.assign(state.cargo, cargo);
+
+        if (!LOCATIONS[state.locationIndex]) state.locationIndex = 0;
+    }
+
+    function startNewGame() {
+        if (!window.confirm('Почати нову гру? Весь прогрес буде втрачено.')) return;
+
+        window.removeEventListener('pagehide', saveGame);
+
+        try {
+            localStorage.removeItem(SAVE_KEY);
+        } catch {
+            return;
+        }
+
+        window.location.reload();
+    }
+
+    function toggleShop() {
+        isShopCollapsed = !isShopCollapsed;
+
+        hud.shop.classList.toggle('is-collapsed', isShopCollapsed);
+        hud.shopToggle.setAttribute('aria-expanded', String(!isShopCollapsed));
+    }
+
     function renderHud() {
         hud.credits.textContent = state.credits;
         hud.storageUsed.textContent = getCargoTotal();
@@ -698,6 +764,8 @@ window.addEventListener('DOMContentLoaded', () => {
     hud.shopDrill.addEventListener('click', buyDrillUpgrade);
     hud.shopDrone.addEventListener('click', buyDrone);
     hud.location.addEventListener('click', openLocations);
+    hud.shopToggle.addEventListener('click', toggleShop);
+    hud.newGame.addEventListener('click', startNewGame);
     hud.locationsClose.addEventListener('click', closeLocations);
     hud.orderDeliver.addEventListener('click', deliverOrder);
     hud.orderSkip.addEventListener('click', skipOrder);
@@ -713,9 +781,14 @@ window.addEventListener('DOMContentLoaded', () => {
         if (event.target === hud.locations) closeLocations();
     });
 
-    createOrder();
+    loadGame();
+
+    if (!state.order) createOrder();
+
     renderLocationSlides();
     renderLocation();
     renderHud();
     requestAnimationFrame(gameLoop);
+
+    window.addEventListener('pagehide', saveGame);
 });

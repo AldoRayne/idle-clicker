@@ -15,54 +15,58 @@
                 <div class="hud__item" id="hud-storage">
                     <div class="hud__storage-total">Склад: <span id="hud-storage-used">0</span> / <span id="hud-storage-capacity">0</span></div>
                     <div class="hud__cargo">
-                        <button class="hud__ore" type="button" title="Продати: Залізо" data-sell-ore="iron"><img class="hud__ore-icon" src="assets/ore-iron.png" alt="Залізо" /><span id="hud-cargo-iron">0</span></button>
-                        <button class="hud__ore" type="button" title="Продати: Мідь" data-sell-ore="copper"><img class="hud__ore-icon" src="assets/ore-copper.png" alt="Мідь" /><span id="hud-cargo-copper">0</span></button>
-                        <button class="hud__ore" type="button" title="Продати: Золото" data-sell-ore="gold"><img class="hud__ore-icon" src="assets/ore-gold.png" alt="Золото" /><span id="hud-cargo-gold">0</span></button>
-                        <button class="hud__ore" type="button" title="Продати: Алмаз" data-sell-ore="diamond"><img class="hud__ore-icon" src="assets/ore-diamond.png" alt="Алмаз" /><span id="hud-cargo-diamond">0</span></button>
+                        <button class="hud__ore" title="Продати: Залізо" data-sell-ore="iron"><img class="hud__ore-icon" src="assets/ore-iron.png" alt="Залізо" /><span id="hud-cargo-iron">0</span></button>
+                        <button class="hud__ore" title="Продати: Мідь" data-sell-ore="copper"><img class="hud__ore-icon" src="assets/ore-copper.png" alt="Мідь" /><span id="hud-cargo-copper">0</span></button>
+                        <button class="hud__ore" title="Продати: Золото" data-sell-ore="gold"><img class="hud__ore-icon" src="assets/ore-gold.png" alt="Золото" /><span id="hud-cargo-gold">0</span></button>
+                        <button class="hud__ore" title="Продати: Алмаз" data-sell-ore="diamond"><img class="hud__ore-icon" src="assets/ore-diamond.png" alt="Алмаз" /><span id="hud-cargo-diamond">0</span></button>
                     </div>
                     <div class="sell-panel" id="sell-panel">
                         <div class="sell-panel__header">
                             <img class="hud__ore-icon" id="sell-panel-icon" src="" alt="" />
                             <span id="sell-panel-name"></span>
-                            <button class="sell-panel__close" id="sell-panel-close" type="button" aria-label="Закрити">×</button>
+                            <button class="sell-panel__close" id="sell-panel-close" aria-label="Закрити">×</button>
                         </div>
                         <input class="sell-panel__range" id="sell-panel-range" type="range" min="1" max="1" step="1" value="1" />
-                        <button class="hud__item hud__button" id="sell-panel-confirm" type="button">Продати <span id="sell-panel-amount">0</span> за <span id="sell-panel-price">0</span> кр.</button>
+                        <button class="hud__item hud__button" id="sell-panel-confirm">Продати <span id="sell-panel-amount">0</span> за <span id="sell-panel-price">0</span> кр.</button>
                     </div>
                 </div>
-                <button class="hud__item hud__button" id="hud-sell" type="button">Продати все (+<span id="hud-sell-value">0</span>)</button>
-                <button class="hud__item hud__button" id="hud-location" type="button">Локація: <span id="hud-location-name"></span></button>
+                <button class="hud__item hud__button" id="hud-sell">Продати все (+<span id="hud-sell-value">0</span>)</button>
+                <button class="hud__item hud__button" id="hud-location">Локація: <span id="hud-location-name"></span></button>
             </div>
-            <div class="shop">
-                <button class="hud__item hud__button shop__button" id="shop-storage" type="button">
-                    <span class="shop__title">Склад +25</span>
-                    <span class="shop__info">Рівень <span id="shop-storage-level">0</span> · <span id="shop-storage-cost">0</span> кр.</span>
-                </button>
-                <button class="hud__item hud__button shop__button" id="shop-drill" type="button">
-                    <span class="shop__title">Бур +1 до удару</span>
-                    <span class="shop__info">Рівень <span id="shop-drill-level">0</span> · <span id="shop-drill-cost">0</span> кр.</span>
-                </button>
-                <button class="hud__item hud__button shop__button" id="shop-drone" type="button">
-                    <span class="shop__title">Дрон-шахтар +0.5 руди/с</span>
-                    <span class="shop__info">Дронів <span id="shop-drone-count">0</span> · <span id="shop-drone-cost">0</span> кр.</span>
-                </button>
-                <div class="hud__item order" id="order">
-                    <div class="order__title">Замовлення</div>
-                    <div class="order__goal">
-                        <img class="hud__ore-icon" id="order-icon" src="" alt="" />
-                        <span id="order-ore-name"></span>
-                        <span><span id="order-progress">0</span> / <span id="order-amount">0</span></span>
-                    </div>
-                    <div class="order__reward">Нагорода: <span id="order-reward">0</span> кр.</div>
-                    <div class="order__actions">
-                        <button class="hud__item hud__button" id="order-deliver" type="button">Здати</button>
-                        <button class="hud__item hud__button" id="order-skip" type="button">Пропустити (<span id="order-skip-cost">0</span> кр.)</button>
+            <div class="shop" id="shop">
+                <button class="hud__item hud__button shop__toggle" id="shop-toggle" aria-expanded="true">Магазин<span class="shop__toggle-icon"></span></button>
+                <div class="shop__body">
+                    <button class="hud__item hud__button shop__button" id="shop-storage">
+                        <span class="shop__title">Склад +25</span>
+                        <span class="shop__info">Рівень <span id="shop-storage-level">0</span> · <span id="shop-storage-cost">0</span> кр.</span>
+                    </button>
+                    <button class="hud__item hud__button shop__button" id="shop-drill">
+                        <span class="shop__title">Бур +1 до удару</span>
+                        <span class="shop__info">Рівень <span id="shop-drill-level">0</span> · <span id="shop-drill-cost">0</span> кр.</span>
+                    </button>
+                    <button class="hud__item hud__button shop__button" id="shop-drone">
+                        <span class="shop__title">Дрон-шахтар +0.5 руди/с</span>
+                        <span class="shop__info">Дронів <span id="shop-drone-count">0</span> · <span id="shop-drone-cost">0</span> кр.</span>
+                    </button>
+                    <div class="hud__item order" id="order">
+                        <div class="order__title">Замовлення</div>
+                        <div class="order__goal">
+                            <img class="hud__ore-icon" id="order-icon" src="" alt="" />
+                            <span id="order-ore-name"></span>
+                            <span><span id="order-progress">0</span> / <span id="order-amount">0</span></span>
+                        </div>
+                        <div class="order__reward">Нагорода: <span id="order-reward">0</span> кр.</div>
+                        <div class="order__actions">
+                            <button class="hud__item hud__button" id="order-deliver">Здати</button>
+                            <button class="hud__item hud__button" id="order-skip">Пропустити (<span id="order-skip-cost">0</span> кр.)</button>
+                        </div>
                     </div>
                 </div>
             </div>
+            <button class="hud__item hud__button new-game" id="new-game">Нова гра</button>
             <div class="locations" id="locations">
                 <div class="locations__dialog">
-                    <button class="locations__close" id="locations-close" type="button" aria-label="Закрити">×</button>
+                    <button class="locations__close" id="locations-close" aria-label="Закрити">×</button>
                     <div class="swiper locations__swiper" id="locations-swiper">
                         <div class="swiper-wrapper" id="locations-slides"></div>
                         <div class="swiper-button-prev"></div>
