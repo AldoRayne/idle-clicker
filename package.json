@@ -1,0 +1,11 @@
+{
+    "name": "idle-clicker",
+    "private": true,
+    "scripts": {
+        "build": "sass scss/index.scss index.css --no-source-map",
+        "watch": "sass scss/index.scss index.css --no-source-map --watch"
+    },
+    "devDependencies": {
+        "sass": "^1.107.1"
+    }
+}

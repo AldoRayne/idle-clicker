@@ -1,0 +1,457 @@
+@use 'variables' as *;
+@use 'functions' as *;
+
+html {
+  font-size: calc(100vw / 1440 * 16);
+
+  @include max-tablet {
+    font-size: $fontSizeBase;
+  }
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    background: #060a18;
+    overflow: hidden;
+}
+
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.asteroid {
+    position: absolute;
+    width: r(60);
+    height: r(60);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    cursor: pointer;
+
+    background-image: url('assets/asteroid.png');
+    background-size: cover;
+    background-color: $colorIron;
+    background-blend-mode: multiply;
+
+    //colors
+    &.copper {
+        background-color: $colorCopper;
+    }
+
+    &.gold {
+        background-color: $colorGold;
+    }
+
+    &.diamond {
+        background-color: $colorDiamond;
+    }
+
+    //sizes
+    &.small {
+        width: r(44);
+        height: r(44);
+    }
+
+    &.medium {
+        width: r(52);
+        height: r(52);
+    }
+
+    &.large {
+        width: r(68);
+        height: r(68);
+    }
+
+    &.is-hit {
+        animation: asteroid-hit 0.15s ease-out;
+    }
+}
+
+.hud {
+    position: absolute;
+    top: r(16);
+    left: r(16);
+    right: r(260);
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: r(12);
+    font-family: system-ui, sans-serif;
+    font-size: r(16);
+    color: #fff;
+
+    @include max-tablet {
+        top: r(8);
+        left: r(8);
+        right: r(8);
+        gap: r(6);
+        font-size: r(14);
+    }
+
+    &__item {
+        padding: r(8) r(14);
+        background-color: rgba(6, 10, 24, 0.75);
+        border: r(1) solid rgba(255, 255, 255, 0.15);
+        border-radius: r(8);
+
+        @include max-tablet {
+            padding: r(6) r(10);
+        }
+
+        &.is-warning {
+            animation: hud-warning 0.4s ease-out;
+        }
+    }
+
+    &__cargo {
+        display: flex;
+        gap: r(14);
+        margin-top: r(6);
+        font-size: r(14);
+
+        @include max-tablet {
+            gap: r(10);
+            margin-top: r(4);
+            font-size: r(13);
+        }
+    }
+
+    &__ore {
+        display: flex;
+        align-items: center;
+        gap: r(4);
+        padding: r(2) r(4);
+        font: inherit;
+        color: inherit;
+        background: none;
+        border: 0;
+        border-radius: r(4);
+        cursor: pointer;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+        }
+    }
+
+    &__ore-icon {
+        width: r(20);
+        height: r(20);
+    }
+
+    &__button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            background-color: rgba(40, 60, 110, 0.85);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+    }
+}
+
+.sell-panel {
+    display: none;
+    flex-direction: column;
+    gap: r(8);
+    margin-top: r(8);
+    padding-top: r(8);
+    border-top: r(1) solid rgba(255, 255, 255, 0.15);
+    font-size: r(14);
+
+    &.is-open {
+        display: flex;
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: r(6);
+    }
+
+    &__close {
+        margin-left: auto;
+        padding: 0 r(4);
+        font-size: r(18);
+        line-height: 1;
+        color: inherit;
+        background: none;
+        border: 0;
+        cursor: pointer;
+    }
+
+    &__range {
+        width: 100%;
+        accent-color: #fff;
+    }
+}
+
+.shop {
+    position: absolute;
+    top: r(16);
+    right: r(16);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: r(8);
+    min-width: r(200);
+    font-family: system-ui, sans-serif;
+    font-size: r(16);
+    color: #fff;
+
+    @include max-tablet {
+        top: auto;
+        right: r(8);
+        bottom: r(8);
+        left: r(8);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: r(6);
+        min-width: 0;
+        font-size: r(13);
+    }
+
+    &__button {
+        display: flex;
+        flex-direction: column;
+        gap: r(2);
+        text-align: left;
+    }
+
+    &__info {
+        font-size: r(13);
+        opacity: 0.7;
+
+        @include max-tablet {
+            font-size: r(11);
+        }
+    }
+
+    &__title {
+        white-space: nowrap;
+
+        @include max-tablet {
+            white-space: normal;
+        }
+    }
+}
+
+.order {
+    display: flex;
+    flex-direction: column;
+    gap: r(6);
+
+    &.is-new {
+        animation: order-new 0.6s ease-out;
+    }
+
+    @include max-tablet {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: r(12);
+    }
+
+    &__title {
+        font-size: r(13);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.7;
+    }
+
+    &__goal {
+        display: flex;
+        align-items: center;
+        gap: r(6);
+    }
+
+    &__reward {
+        font-size: r(14);
+    }
+
+    &__actions {
+        display: flex;
+        gap: r(6);
+
+        @include max-tablet {
+            flex-basis: 100%;
+        }
+
+        .hud__button {
+            flex: 1;
+            padding: r(6) r(8);
+            font-size: r(14);
+        }
+    }
+}
+
+.locations {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: r(16);
+    background-color: rgba(3, 5, 12, 0.7);
+    font-family: system-ui, sans-serif;
+    color: #fff;
+
+    &.is-open {
+        display: flex;
+    }
+
+    &__dialog {
+        position: relative;
+        width: 100%;
+        max-width: r(720);
+    }
+
+    &__close {
+        position: absolute;
+        top: r(-44);
+        right: 0;
+        width: r(36);
+        height: r(36);
+        font-size: r(24);
+        line-height: 1;
+        color: #fff;
+        background-color: rgba(6, 10, 24, 0.75);
+        border: r(1) solid rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    &__swiper {
+        --swiper-theme-color: #fff;
+        --swiper-pagination-bullet-inactive-color: #fff;
+        border-radius: r(12);
+
+        @include max-tablet {
+            .swiper-button-prev,
+            .swiper-button-next {
+                display: none;
+            }
+        }
+    }
+
+    &__slide {
+        display: flex;
+        align-items: flex-end;
+        height: r(400);
+        background-size: cover;
+        background-position: center;
+        border-radius: r(12);
+
+        @include max-tablet {
+            height: r(340);
+        }
+    }
+
+    &__content {
+        width: 100%;
+        padding: r(24) r(56) r(48);
+        background: linear-gradient(transparent, rgba(3, 5, 12, 0.85) 40%);
+        border-radius: 0 0 r(12) r(12);
+
+        @include max-tablet {
+            padding: r(16) r(16) r(36);
+        }
+    }
+
+    &__name {
+        margin: 0 0 r(6);
+        font-size: r(28);
+
+        @include max-tablet {
+            font-size: r(22);
+        }
+    }
+
+    &__stats {
+        margin: 0 0 r(10);
+        opacity: 0.8;
+
+        @include max-tablet {
+            font-size: r(14);
+        }
+    }
+
+    &__ores {
+        display: flex;
+        flex-wrap: wrap;
+        gap: r(14);
+        margin-bottom: r(16);
+        font-size: r(14);
+
+        @include max-tablet {
+            gap: r(10);
+        }
+    }
+
+    &__ore {
+        display: flex;
+        align-items: center;
+        gap: r(4);
+    }
+
+    &__action {
+        font-size: r(16);
+    }
+}
+
+#app.is-storage-full {
+    .asteroid {
+        cursor: not-allowed;
+    }
+
+    .hud__storage-total {
+        color: $colorWarning;
+    }
+}
+
+@keyframes hud-warning {
+    from {
+        background-color: rgba(255, 80, 80, 0.6);
+    }
+
+    to {
+        background-color: rgba(6, 10, 24, 0.75);
+    }
+}
+
+@keyframes order-new {
+    from {
+        background-color: rgba(111, 220, 140, 0.5);
+    }
+
+    to {
+        background-color: rgba(6, 10, 24, 0.75);
+    }
+}
+
+@keyframes asteroid-hit {
+    from {
+        filter: brightness(2);
+    }
+
+    to {
+        filter: brightness(1);
+    }
+}
