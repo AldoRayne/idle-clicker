@@ -25,6 +25,23 @@ window.addEventListener('DOMContentLoaded', () => {
         locationsClose: document.getElementById('locations-close'),
         locationsSwiper: document.getElementById('locations-swiper'),
         locationsSlides: document.getElementById('locations-slides'),
+        order: document.getElementById('order'),
+        orderIcon: document.getElementById('order-icon'),
+        orderOreName: document.getElementById('order-ore-name'),
+        orderProgress: document.getElementById('order-progress'),
+        orderAmount: document.getElementById('order-amount'),
+        orderReward: document.getElementById('order-reward'),
+        orderDeliver: document.getElementById('order-deliver'),
+        orderSkip: document.getElementById('order-skip'),
+        orderSkipCost: document.getElementById('order-skip-cost'),
+        sellPanel: document.getElementById('sell-panel'),
+        sellPanelIcon: document.getElementById('sell-panel-icon'),
+        sellPanelName: document.getElementById('sell-panel-name'),
+        sellPanelClose: document.getElementById('sell-panel-close'),
+        sellPanelRange: document.getElementById('sell-panel-range'),
+        sellPanelConfirm: document.getElementById('sell-panel-confirm'),
+        sellPanelAmount: document.getElementById('sell-panel-amount'),
+        sellPanelPrice: document.getElementById('sell-panel-price'),
         cargo: {
             iron: document.getElementById('hud-cargo-iron'),
             copper: document.getElementById('hud-cargo-copper'),
@@ -61,6 +78,18 @@ window.addEventListener('DOMContentLoaded', () => {
         gold: 'assets/ore-gold.png',
         diamond: 'assets/ore-diamond.png',
     };
+
+    const ORE_NAMES = {
+        iron: 'Залізо',
+        copper: 'Мідь',
+        gold: 'Золото',
+        diamond: 'Алмаз',
+    };
+
+    const ORDER_SIZE = { min: 0.3, max: 0.6 };
+    const ORDER_MIN_AMOUNT = 5;
+    const ORDER_REWARD_MULTIPLIER = 2;
+    const ORDER_SKIP_COST_SHARE = 0.25;
 
     const LOCATIONS = [
         {
@@ -116,6 +145,7 @@ window.addEventListener('DOMContentLoaded', () => {
         droneProgress: 0,
         locationIndex: 0,
         unlockedLocationIds: ['inner'],
+        order: null,
         upgradeLevels: {
             storage: 0,
             drill: 0,
@@ -131,6 +161,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const locationButtons = [];
     let locationsSlider = null;
+    let sellPanelOreType = null;
 
     function getRandomItem(items) {
         return items[Math.floor(Math.random() * items.length)];
@@ -214,6 +245,33 @@ window.addEventListener('DOMContentLoaded', () => {
         return Object.entries(state.cargo).reduce((sum, [type, amount]) => sum + amount * ORE_PRICES[type], 0);
     }
 
+    function sellOre(type, amount) {
+        const soldAmount = Math.min(amount, state.cargo[type]);
+
+        state.cargo[type] -= soldAmount;
+        state.credits += soldAmount * ORE_PRICES[type];
+
+        renderHud();
+    }
+
+    function openSellPanel(type) {
+        sellPanelOreType = type;
+        hud.sellPanelRange.max = state.cargo[type];
+        hud.sellPanelRange.value = state.cargo[type];
+
+        renderSellPanel();
+    }
+
+    function closeSellPanel() {
+        sellPanelOreType = null;
+        renderSellPanel();
+    }
+
+    function confirmSellPanel() {
+        sellOre(sellPanelOreType, Number(hud.sellPanelRange.value));
+        closeSellPanel();
+    }
+
     function sellAllCargo() {
         state.credits += getCargoValue();
 
@@ -280,6 +338,55 @@ window.addEventListener('DOMContentLoaded', () => {
             state.droneProgress -= 1;
         }
 
+        renderHud();
+    }
+
+    function createOrder() {
+        const oreWeights = { ...getCurrentLocation().oreWeights };
+
+        if (state.order) delete oreWeights[state.order.type];
+
+        const type = getRandomWeightedKey(oreWeights);
+        const size = getRandomNumber(ORDER_SIZE.min, ORDER_SIZE.max);
+        const amount = Math.max(ORDER_MIN_AMOUNT, Math.round(state.storageCapacity * size));
+
+        state.order = {
+            type,
+            amount,
+            reward: amount * ORE_PRICES[type] * ORDER_REWARD_MULTIPLIER,
+        };
+
+        restartAnimation(hud.order, 'is-new');
+    }
+
+    function canDeliverOrder() {
+        return state.cargo[state.order.type] >= state.order.amount;
+    }
+
+    function deliverOrder() {
+        if (!canDeliverOrder()) return;
+
+        state.cargo[state.order.type] -= state.order.amount;
+        state.credits += state.order.reward;
+
+        createOrder();
+        renderHud();
+    }
+
+    function getOrderSkipCost() {
+        return Math.round(state.order.reward * ORDER_SKIP_COST_SHARE);
+    }
+
+    function canSkipOrder() {
+        return state.credits >= getOrderSkipCost();
+    }
+
+    function skipOrder() {
+        if (!canSkipOrder()) return;
+
+        state.credits -= getOrderSkipCost();
+
+        createOrder();
         renderHud();
     }
 
@@ -509,6 +616,39 @@ window.addEventListener('DOMContentLoaded', () => {
         hud.locations.classList.remove('is-open');
     }
 
+    function renderSellPanel() {
+        const isOpen = sellPanelOreType !== null;
+
+        hud.sellPanel.classList.toggle('is-open', isOpen);
+
+        if (!isOpen) return;
+
+        const available = state.cargo[sellPanelOreType];
+        hud.sellPanelRange.max = Math.max(available, 1);
+        hud.sellPanelRange.disabled = available === 0;
+
+        const amount = available === 0 ? 0 : Number(hud.sellPanelRange.value);
+
+        hud.sellPanelIcon.src = ORE_ICONS[sellPanelOreType];
+        hud.sellPanelName.textContent = `${ORE_NAMES[sellPanelOreType]} · є ${available}`;
+        hud.sellPanelAmount.textContent = amount;
+        hud.sellPanelPrice.textContent = amount * ORE_PRICES[sellPanelOreType];
+        hud.sellPanelConfirm.disabled = amount === 0;
+    }
+
+    function renderOrder() {
+        const { type, amount, reward } = state.order;
+
+        hud.orderIcon.src = ORE_ICONS[type];
+        hud.orderOreName.textContent = ORE_NAMES[type];
+        hud.orderProgress.textContent = Math.min(state.cargo[type], amount);
+        hud.orderAmount.textContent = amount;
+        hud.orderReward.textContent = reward;
+        hud.orderDeliver.disabled = !canDeliverOrder();
+        hud.orderSkipCost.textContent = getOrderSkipCost();
+        hud.orderSkip.disabled = !canSkipOrder();
+    }
+
     function renderHud() {
         hud.credits.textContent = state.credits;
         hud.storageUsed.textContent = getCargoTotal();
@@ -533,6 +673,8 @@ window.addEventListener('DOMContentLoaded', () => {
         hud.shopDroneCost.textContent = getUpgradeCost('drone');
         hud.shopDrone.disabled = !canAffordUpgrade('drone');
 
+        renderSellPanel();
+        renderOrder();
         renderLocationButtons();
 
         app.classList.toggle('is-storage-full', isStorageFull());
@@ -557,11 +699,21 @@ window.addEventListener('DOMContentLoaded', () => {
     hud.shopDrone.addEventListener('click', buyDrone);
     hud.location.addEventListener('click', openLocations);
     hud.locationsClose.addEventListener('click', closeLocations);
+    hud.orderDeliver.addEventListener('click', deliverOrder);
+    hud.orderSkip.addEventListener('click', skipOrder);
+    hud.sellPanelClose.addEventListener('click', closeSellPanel);
+    hud.sellPanelConfirm.addEventListener('click', confirmSellPanel);
+    hud.sellPanelRange.addEventListener('input', renderSellPanel);
+
+    document.querySelectorAll('[data-sell-ore]').forEach((button) => {
+        button.addEventListener('click', () => openSellPanel(button.dataset.sellOre));
+    });
 
     hud.locations.addEventListener('click', (event) => {
         if (event.target === hud.locations) closeLocations();
     });
 
+    createOrder();
     renderLocationSlides();
     renderLocation();
     renderHud();
