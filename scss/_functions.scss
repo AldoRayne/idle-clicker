@@ -1,6 +1,46 @@
 @use 'sass:math';
 @use 'variables' as *;
 
+@mixin max-desktop {
+	@media only screen and (max-width: 1439px) { @content; }
+}
+
+@mixin max-laptop {
+	@media only screen and (max-width: 1199px) { @content; }
+}
+
+@mixin max-tablet-portrait {
+	@media only screen and (max-width: 991px) { @content; }
+}
+
+@mixin max-tablet {
+	@media only screen and (max-width: 767px) { @content; }
+}
+
+@mixin max-small {
+	@media only screen and (max-width: 350px) { @content; }
+}
+
+@mixin min-small {
+	@media only screen and (min-width: 350px) { @content; }
+}
+
+@mixin min-tablet {
+	@media only screen and (min-width: 768px) { @content; }
+}
+
+@mixin min-tablet-portrait {
+	@media only screen and (min-width: 992px) { @content; }
+}
+
+@mixin min-laptop {
+	@media only screen and (min-width: 1200px) { @content; }
+}
+
+@mixin min-desktop {
+	@media only screen and (min-width: 1440px) { @content; }
+}
+
 @function strip-units($number) {
     @return math.div($number, $number * 0 + 1);
 }
