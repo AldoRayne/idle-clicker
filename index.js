@@ -59,7 +59,7 @@ window.addEventListener('DOMContentLoaded', () => {
         iron: 'assets/ore-iron.png',
         copper: 'assets/ore-copper.png',
         gold: 'assets/ore-gold.png',
-        diamond: 'assets/ore-ice.png',
+        diamond: 'assets/ore-diamond.png',
     };
 
     const LOCATIONS = [
