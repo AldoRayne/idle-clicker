@@ -21,6 +21,7 @@
                     </div>
                 </div>
                 <button class="hud__item hud__button" id="hud-sell" type="button">Продати все (+<span id="hud-sell-value">0</span>)</button>
+                <button class="hud__item hud__button" id="hud-location" type="button">Локація: <span id="hud-location-name"></span></button>
             </div>
             <div class="shop">
                 <button class="hud__item hud__button shop__button" id="shop-storage" type="button">
@@ -35,6 +36,17 @@
                     <span class="shop__title">Дрон-шахтар +0.5 руди/с</span>
                     <span class="shop__info">Дронів <span id="shop-drone-count">0</span> · <span id="shop-drone-cost">0</span> кр.</span>
                 </button>
+            </div>
+            <div class="locations" id="locations">
+                <div class="locations__dialog">
+                    <button class="locations__close" id="locations-close" type="button" aria-label="Закрити">×</button>
+                    <div class="swiper locations__swiper" id="locations-swiper">
+                        <div class="swiper-wrapper" id="locations-slides"></div>
+                        <div class="swiper-button-prev"></div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-pagination"></div>
+                    </div>
+                </div>
             </div>
         </div>
         <script src="libs/swiper/index.js"></script>
