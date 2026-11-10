@@ -14,8 +14,6 @@ window.addEventListener('DOMContentLoaded', () => {
         location: document.getElementById('hud-location'),
         locationName: document.getElementById('hud-location-name'),
         newGame: document.getElementById('new-game'),
-        shop: document.getElementById('shop'),
-        shopToggle: document.getElementById('shop-toggle'),
         shopStorage: document.getElementById('shop-storage'),
         shopStorageLevel: document.getElementById('shop-storage-level'),
         shopStorageCost: document.getElementById('shop-storage-cost'),
@@ -178,7 +176,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const locationButtons = [];
     let locationsSlider = null;
     let sellPanelOreType = null;
-    let isShopCollapsed = false;
     let pointer = null;
 
     function getRandomItem(items) {
@@ -832,13 +829,6 @@ window.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
     }
 
-    function toggleShop() {
-        isShopCollapsed = !isShopCollapsed;
-
-        hud.shop.classList.toggle('is-collapsed', isShopCollapsed);
-        hud.shopToggle.setAttribute('aria-expanded', String(!isShopCollapsed));
-    }
-
     function renderHud() {
         hud.credits.textContent = state.credits;
         hud.storageUsed.textContent = getCargoTotal();
@@ -894,7 +884,6 @@ window.addEventListener('DOMContentLoaded', () => {
     hud.shopDrone.addEventListener('click', buyDrone);
     hud.shopCollector.addEventListener('click', buyCollector);
     hud.location.addEventListener('click', openLocations);
-    hud.shopToggle.addEventListener('click', toggleShop);
     hud.newGame.addEventListener('click', startNewGame);
     hud.locationsClose.addEventListener('click', closeLocations);
     hud.orderDeliver.addEventListener('click', deliverOrder);

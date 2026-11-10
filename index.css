@@ -248,30 +248,6 @@ body {
     font-size: 0.8125rem;
   }
 }
-.shop.is-collapsed .shop__body {
-  height: 0;
-  overflow: hidden;
-  visibility: hidden;
-}
-.shop__toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-.shop__toggle-icon {
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-top: 0.25rem;
-  border-right: 0.125rem solid currentColor;
-  border-bottom: 0.125rem solid currentColor;
-  transform: rotate(-135deg);
-  transition: transform 0.2s ease-out;
-}
-.shop.is-collapsed .shop__toggle-icon {
-  margin-top: -0.25rem;
-  transform: rotate(45deg);
-}
 .shop__body {
   display: flex;
   flex-direction: column;
