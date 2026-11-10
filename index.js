@@ -24,6 +24,10 @@ window.addEventListener('DOMContentLoaded', () => {
         shopDrone: document.getElementById('shop-drone'),
         shopDroneCount: document.getElementById('shop-drone-count'),
         shopDroneCost: document.getElementById('shop-drone-cost'),
+        shopCollector: document.getElementById('shop-collector'),
+        shopCollectorCount: document.getElementById('shop-collector-count'),
+        shopCollectorCost: document.getElementById('shop-collector-cost'),
+        pickupRing: document.getElementById('pickup-ring'),
         locations: document.getElementById('locations'),
         locationsClose: document.getElementById('locations-close'),
         locationsSwiper: document.getElementById('locations-swiper'),
@@ -61,11 +65,15 @@ window.addEventListener('DOMContentLoaded', () => {
     const START_DRILL_POWER = 1;
     const STORAGE_UPGRADE_STEP = 25;
     const DRONE_ORE_PER_SECOND = 0.5;
+    const START_PICKUP_RADIUS = 20;
+    const PICKUP_RADIUS_STEP = 10;
+    const ORE_DROP_DISTANCE = { min: 45, max: 70 };
 
     const UPGRADES = {
         storage: { baseCost: 100, costMultiplier: 1.5 },
         drill: { baseCost: 75, costMultiplier: 2.2 },
         drone: { baseCost: 150, costMultiplier: 1.6 },
+        collector: { baseCost: 120, costMultiplier: 1.7 },
     };
 
     const ORE_PRICES = {
@@ -141,12 +149,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const state = {
         asteroids: [],
+        oreDrops: [],
         spawnCooldown: 0,
         credits: 0,
         storageCapacity: START_STORAGE_CAPACITY,
         drillPower: START_DRILL_POWER,
         drones: 0,
         droneProgress: 0,
+        pickupRadius: START_PICKUP_RADIUS,
         locationIndex: 0,
         unlockedLocationIds: ['inner'],
         order: null,
@@ -154,6 +164,7 @@ window.addEventListener('DOMContentLoaded', () => {
             storage: 0,
             drill: 0,
             drone: 0,
+            collector: 0,
         },
         cargo: {
             iron: 0,
@@ -167,6 +178,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let locationsSlider = null;
     let sellPanelOreType = null;
     let isShopCollapsed = false;
+    let pointer = null;
 
     function getRandomItem(items) {
         return items[Math.floor(Math.random() * items.length)];
@@ -187,6 +199,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function getRandomNumber(min, max) {
         return min + Math.random() * (max - min);
+    }
+
+    function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
     }
 
     function getFlightArea() {
@@ -325,6 +341,14 @@ window.addEventListener('DOMContentLoaded', () => {
         renderHud();
     }
 
+    function buyCollector() {
+        if (!payForUpgrade('collector')) return;
+
+        state.pickupRadius += PICKUP_RADIUS_STEP;
+        renderPickupRing();
+        renderHud();
+    }
+
     function runDrones(deltaTime) {
         if (state.drones === 0) return;
 
@@ -414,6 +438,7 @@ window.addEventListener('DOMContentLoaded', () => {
         state.locationIndex = index;
 
         removeAllAsteroids();
+        removeAllOreDrops();
         state.spawnCooldown = 0;
 
         renderLocation();
@@ -475,18 +500,16 @@ window.addEventListener('DOMContentLoaded', () => {
         state.asteroids.filter(isAsteroidOutsideFlightArea).forEach(destroyAsteroid);
     }
 
-    function hitAsteroid(asteroid) {
+    function hitAsteroid(asteroid, event) {
         if (isStorageFull()) {
             renderStorageWarning();
             return;
         }
 
-        const freeSpace = state.storageCapacity - getCargoTotal();
-        const minedAmount = Math.min(state.drillPower, asteroid.hp, freeSpace);
+        const minedAmount = Math.min(state.drillPower, asteroid.hp);
 
         asteroid.hp -= minedAmount;
-        state.cargo[asteroid.type] += minedAmount;
-        renderHud();
+        dropOre(asteroid.type, minedAmount, getPointInApp(event));
 
         if (asteroid.hp <= 0) {
             destroyAsteroid(asteroid);
@@ -506,6 +529,80 @@ window.addEventListener('DOMContentLoaded', () => {
         state.asteroids = [];
     }
 
+    function getPointInApp(event) {
+        const appRect = app.getBoundingClientRect();
+
+        return {
+            x: event.clientX - appRect.left,
+            y: event.clientY - appRect.top,
+        };
+    }
+
+    function getOreDropPoint(hitPoint) {
+        const angle = getRandomNumber(0, Math.PI * 2);
+        const distance = getRandomNumber(ORE_DROP_DISTANCE.min, ORE_DROP_DISTANCE.max);
+
+        return {
+            x: clamp(hitPoint.x + Math.cos(angle) * distance, 0, app.clientWidth),
+            y: clamp(hitPoint.y + Math.sin(angle) * distance, 0, app.clientHeight),
+        };
+    }
+
+    function dropOre(type, amount, hitPoint) {
+        const { x, y } = getOreDropPoint(hitPoint);
+        const oreDrop = { type, amount, x, y, el: null };
+
+        state.oreDrops.push(oreDrop);
+        renderNewOreDrop(oreDrop);
+    }
+
+    function isOreDropInPickupRadius(oreDrop) {
+        if (!pointer) return false;
+
+        return Math.hypot(oreDrop.x - pointer.x, oreDrop.y - pointer.y) <= state.pickupRadius;
+    }
+
+    function collectOreDrop(oreDrop) {
+        const freeSpace = state.storageCapacity - getCargoTotal();
+        const collectedAmount = Math.min(oreDrop.amount, freeSpace);
+
+        state.cargo[oreDrop.type] += collectedAmount;
+        oreDrop.amount -= collectedAmount;
+
+        if (oreDrop.amount > 0) return;
+
+        state.oreDrops = state.oreDrops.filter((drop) => drop !== oreDrop);
+        oreDrop.el.remove();
+    }
+
+    function collectOreDropsInPickupRadius() {
+        if (isStorageFull()) return;
+
+        const oreDropsInRadius = state.oreDrops.filter(isOreDropInPickupRadius);
+
+        if (oreDropsInRadius.length === 0) return;
+
+        oreDropsInRadius.forEach(collectOreDrop);
+        renderHud();
+    }
+
+    function removeAllOreDrops() {
+        state.oreDrops.forEach((oreDrop) => oreDrop.el.remove());
+        state.oreDrops = [];
+    }
+
+    function movePointer(event) {
+        pointer = getPointInApp(event);
+        renderPickupRing();
+    }
+
+    function hidePointer(event) {
+        if (event.pointerType !== 'mouse') return;
+
+        pointer = null;
+        renderPickupRing();
+    }
+
     function restartAnimation(el, className) {
         el.classList.remove(className);
         void el.offsetWidth;
@@ -516,7 +613,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const el = document.createElement('div');
         el.className = `asteroid ${asteroid.type} ${asteroid.size}`;
 
-        el.addEventListener('click', () => hitAsteroid(asteroid));
+        el.addEventListener('click', (event) => hitAsteroid(asteroid, event));
 
         asteroid.el = el;
         renderAsteroidPosition(asteroid);
@@ -526,6 +623,31 @@ window.addEventListener('DOMContentLoaded', () => {
     function renderAsteroidPosition(asteroid) {
         asteroid.el.style.left = `${asteroid.x}px`;
         asteroid.el.style.top = `${asteroid.y}px`;
+    }
+
+    function renderNewOreDrop(oreDrop) {
+        const el = document.createElement('img');
+        el.className = 'ore-drop';
+        el.src = ORE_ICONS[oreDrop.type];
+        el.alt = '';
+        el.style.left = `${oreDrop.x}px`;
+        el.style.top = `${oreDrop.y}px`;
+
+        oreDrop.el = el;
+        app.appendChild(el);
+    }
+
+    function renderPickupRing() {
+        hud.pickupRing.classList.toggle('is-visible', pointer !== null);
+
+        if (!pointer) return;
+
+        const size = `${state.pickupRadius * 2}px`;
+
+        hud.pickupRing.style.left = `${pointer.x}px`;
+        hud.pickupRing.style.top = `${pointer.y}px`;
+        hud.pickupRing.style.width = size;
+        hud.pickupRing.style.height = size;
     }
 
     function renderAsteroidHit(asteroid) {
@@ -660,6 +782,7 @@ window.addEventListener('DOMContentLoaded', () => {
             storageCapacity: state.storageCapacity,
             drillPower: state.drillPower,
             drones: state.drones,
+            pickupRadius: state.pickupRadius,
             locationIndex: state.locationIndex,
             unlockedLocationIds: state.unlockedLocationIds,
             order: state.order,
@@ -739,6 +862,10 @@ window.addEventListener('DOMContentLoaded', () => {
         hud.shopDroneCost.textContent = getUpgradeCost('drone');
         hud.shopDrone.disabled = !canAffordUpgrade('drone');
 
+        hud.shopCollectorCount.textContent = state.upgradeLevels.collector;
+        hud.shopCollectorCost.textContent = getUpgradeCost('collector');
+        hud.shopCollector.disabled = !canAffordUpgrade('collector');
+
         renderSellPanel();
         renderOrder();
         renderLocationButtons();
@@ -755,6 +882,7 @@ window.addEventListener('DOMContentLoaded', () => {
         runAsteroidSpawner(deltaTime);
         moveAsteroids(deltaTime);
         runDrones(deltaTime);
+        collectOreDropsInPickupRadius();
 
         requestAnimationFrame(gameLoop);
     }
@@ -763,6 +891,7 @@ window.addEventListener('DOMContentLoaded', () => {
     hud.shopStorage.addEventListener('click', buyStorageUpgrade);
     hud.shopDrill.addEventListener('click', buyDrillUpgrade);
     hud.shopDrone.addEventListener('click', buyDrone);
+    hud.shopCollector.addEventListener('click', buyCollector);
     hud.location.addEventListener('click', openLocations);
     hud.shopToggle.addEventListener('click', toggleShop);
     hud.newGame.addEventListener('click', startNewGame);
@@ -776,6 +905,10 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-sell-ore]').forEach((button) => {
         button.addEventListener('click', () => openSellPanel(button.dataset.sellOre));
     });
+
+    app.addEventListener('pointermove', movePointer);
+    app.addEventListener('pointerdown', movePointer);
+    app.addEventListener('pointerleave', hidePointer);
 
     hud.locations.addEventListener('click', (event) => {
         if (event.target === hud.locations) closeLocations();

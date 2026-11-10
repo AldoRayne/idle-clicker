@@ -77,6 +77,29 @@ body {
     }
 }
 
+.ore-drop {
+    position: absolute;
+    width: r(22);
+    height: r(22);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: ore-drop-blink 0.8s ease-in-out 2;
+}
+
+.pickup-ring {
+    position: absolute;
+    z-index: 5;
+    display: none;
+    transform: translate(-50%, -50%);
+    border: r(1) dashed rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    pointer-events: none;
+
+    &.is-visible {
+        display: block;
+    }
+}
+
 .hud {
     position: absolute;
     top: r(16);
@@ -259,7 +282,7 @@ body {
 
         @include max-tablet {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: r(6);
         }
     }
@@ -507,5 +530,11 @@ body {
 
     to {
         filter: brightness(1);
+    }
+}
+
+@keyframes ore-drop-blink {
+    50% {
+        opacity: 0.6;
     }
 }
