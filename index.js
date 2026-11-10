@@ -1,7 +1,8 @@
 window.addEventListener('DOMContentLoaded', () => {
     const app = document.getElementById('app');
+    const field = document.getElementById('field');
 
-    if (!app) return;
+    if (!app || !field) return;
 
     const hud = {
         credits: document.getElementById('hud-credits'),
@@ -12,8 +13,6 @@ window.addEventListener('DOMContentLoaded', () => {
         sellValue: document.getElementById('hud-sell-value'),
         location: document.getElementById('hud-location'),
         locationName: document.getElementById('hud-location-name'),
-        shop: document.getElementById('shop'),
-        shopToggle: document.getElementById('shop-toggle'),
         newGame: document.getElementById('new-game'),
         shopStorage: document.getElementById('shop-storage'),
         shopStorageLevel: document.getElementById('shop-storage-level'),
@@ -29,6 +28,8 @@ window.addEventListener('DOMContentLoaded', () => {
         shopCollectorCost: document.getElementById('shop-collector-cost'),
         pickupRing: document.getElementById('pickup-ring'),
         locations: document.getElementById('locations'),
+        intro: document.getElementById('intro'),
+        introStart: document.getElementById('intro-start'),
         locationsClose: document.getElementById('locations-close'),
         locationsSwiper: document.getElementById('locations-swiper'),
         locationsSlides: document.getElementById('locations-slides'),
@@ -177,7 +178,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const locationButtons = [];
     let locationsSlider = null;
     let sellPanelOreType = null;
-    let isShopCollapsed = false;
     let pointer = null;
 
     function getRandomItem(items) {
@@ -208,9 +208,9 @@ window.addEventListener('DOMContentLoaded', () => {
     function getFlightArea() {
         return {
             left: -ASTEROID_OFFSCREEN_MARGIN,
-            right: app.clientWidth + ASTEROID_OFFSCREEN_MARGIN,
+            right: field.clientWidth + ASTEROID_OFFSCREEN_MARGIN,
             top: -ASTEROID_OFFSCREEN_MARGIN,
-            bottom: app.clientHeight + ASTEROID_OFFSCREEN_MARGIN,
+            bottom: field.clientHeight + ASTEROID_OFFSCREEN_MARGIN,
         };
     }
 
@@ -226,8 +226,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     function getRandomTargetPoint() {
-        const width = app.clientWidth;
-        const height = app.clientHeight;
+        const width = field.clientWidth;
+        const height = field.clientHeight;
 
         return {
             x: getRandomNumber(width * ASTEROID_TARGET_PADDING, width * (1 - ASTEROID_TARGET_PADDING)),
@@ -446,7 +446,7 @@ window.addEventListener('DOMContentLoaded', () => {
         closeLocations();
     }
 
-    function spawnAsteroid({ type, size, x, y, speedX, speedY }) {
+    function spawnAsteroid({ type, size, x, y, speedX, speedY, hp = ASTEROID_HP[size] * getCurrentLocation().hpMultiplier }) {
         const asteroid = {
             type,
             size,
@@ -454,7 +454,7 @@ window.addEventListener('DOMContentLoaded', () => {
             y,
             speedX,
             speedY,
-            hp: ASTEROID_HP[size] * getCurrentLocation().hpMultiplier,
+            hp,
             el: null,
         };
 
@@ -509,7 +509,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const minedAmount = Math.min(state.drillPower, asteroid.hp);
 
         asteroid.hp -= minedAmount;
-        dropOre(asteroid.type, minedAmount, getPointInApp(event));
+        dropOre(asteroid.type, minedAmount, getPointInField(event));
 
         if (asteroid.hp <= 0) {
             destroyAsteroid(asteroid);
@@ -529,12 +529,12 @@ window.addEventListener('DOMContentLoaded', () => {
         state.asteroids = [];
     }
 
-    function getPointInApp(event) {
-        const appRect = app.getBoundingClientRect();
+    function getPointInField(event) {
+        const fieldRect = field.getBoundingClientRect();
 
         return {
-            x: event.clientX - appRect.left,
-            y: event.clientY - appRect.top,
+            x: event.clientX - fieldRect.left,
+            y: event.clientY - fieldRect.top,
         };
     }
 
@@ -543,17 +543,22 @@ window.addEventListener('DOMContentLoaded', () => {
         const distance = getRandomNumber(ORE_DROP_DISTANCE.min, ORE_DROP_DISTANCE.max);
 
         return {
-            x: clamp(hitPoint.x + Math.cos(angle) * distance, 0, app.clientWidth),
-            y: clamp(hitPoint.y + Math.sin(angle) * distance, 0, app.clientHeight),
+            x: clamp(hitPoint.x + Math.cos(angle) * distance, 0, field.clientWidth),
+            y: clamp(hitPoint.y + Math.sin(angle) * distance, 0, field.clientHeight),
         };
     }
 
-    function dropOre(type, amount, hitPoint) {
-        const { x, y } = getOreDropPoint(hitPoint);
+    function placeOreDrop({ type, amount, x, y }) {
         const oreDrop = { type, amount, x, y, el: null };
 
         state.oreDrops.push(oreDrop);
         renderNewOreDrop(oreDrop);
+    }
+
+    function dropOre(type, amount, hitPoint) {
+        const { x, y } = getOreDropPoint(hitPoint);
+
+        placeOreDrop({ type, amount, x, y });
     }
 
     function isOreDropInPickupRadius(oreDrop) {
@@ -592,7 +597,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     function movePointer(event) {
-        pointer = getPointInApp(event);
+        pointer = getPointInField(event);
         renderPickupRing();
     }
 
@@ -617,7 +622,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         asteroid.el = el;
         renderAsteroidPosition(asteroid);
-        app.appendChild(el);
+        field.appendChild(el);
     }
 
     function renderAsteroidPosition(asteroid) {
@@ -634,7 +639,7 @@ window.addEventListener('DOMContentLoaded', () => {
         el.style.top = `${oreDrop.y}px`;
 
         oreDrop.el = el;
-        app.appendChild(el);
+        field.appendChild(el);
     }
 
     function renderPickupRing() {
@@ -661,7 +666,7 @@ window.addEventListener('DOMContentLoaded', () => {
     function renderLocation() {
         const location = getCurrentLocation();
 
-        app.style.backgroundImage = `url('${location.background}')`;
+        field.style.backgroundImage = `url('${location.background}')`;
         hud.locationName.textContent = location.name;
     }
 
@@ -788,6 +793,8 @@ window.addEventListener('DOMContentLoaded', () => {
             order: state.order,
             upgradeLevels: state.upgradeLevels,
             cargo: state.cargo,
+            asteroids: state.asteroids.map(({ el, ...asteroid }) => asteroid),
+            oreDrops: state.oreDrops.map(({ el, ...oreDrop }) => oreDrop),
         };
 
         try {
@@ -803,18 +810,30 @@ window.addEventListener('DOMContentLoaded', () => {
         try {
             saveData = JSON.parse(localStorage.getItem(SAVE_KEY));
         } catch {
-            return;
+            return false;
         }
 
-        if (!saveData) return;
+        if (!saveData) return false;
 
-        const { upgradeLevels, cargo, ...simpleValues } = saveData;
+        const { upgradeLevels, cargo, asteroids = [], oreDrops = [], ...simpleValues } = saveData;
 
         Object.assign(state, simpleValues);
         Object.assign(state.upgradeLevels, upgradeLevels);
         Object.assign(state.cargo, cargo);
 
         if (!LOCATIONS[state.locationIndex]) state.locationIndex = 0;
+
+        asteroids.forEach(spawnAsteroid);
+
+        oreDrops.forEach((oreDrop) => {
+            placeOreDrop({
+                ...oreDrop,
+                x: clamp(oreDrop.x, 0, field.clientWidth),
+                y: clamp(oreDrop.y, 0, field.clientHeight),
+            });
+        });
+
+        return true;
     }
 
     function startNewGame() {
@@ -829,13 +848,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         window.location.reload();
-    }
-
-    function toggleShop() {
-        isShopCollapsed = !isShopCollapsed;
-
-        hud.shop.classList.toggle('is-collapsed', isShopCollapsed);
-        hud.shopToggle.setAttribute('aria-expanded', String(!isShopCollapsed));
     }
 
     function renderHud() {
@@ -887,13 +899,19 @@ window.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(gameLoop);
     }
 
+    function startGame() {
+        hud.intro.classList.remove('is-open');
+
+        lastFrameTime = performance.now();
+        requestAnimationFrame(gameLoop);
+    }
+
     hud.sell.addEventListener('click', sellAllCargo);
     hud.shopStorage.addEventListener('click', buyStorageUpgrade);
     hud.shopDrill.addEventListener('click', buyDrillUpgrade);
     hud.shopDrone.addEventListener('click', buyDrone);
     hud.shopCollector.addEventListener('click', buyCollector);
     hud.location.addEventListener('click', openLocations);
-    hud.shopToggle.addEventListener('click', toggleShop);
     hud.newGame.addEventListener('click', startNewGame);
     hud.locationsClose.addEventListener('click', closeLocations);
     hud.orderDeliver.addEventListener('click', deliverOrder);
@@ -906,22 +924,24 @@ window.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => openSellPanel(button.dataset.sellOre));
     });
 
-    app.addEventListener('pointermove', movePointer);
-    app.addEventListener('pointerdown', movePointer);
-    app.addEventListener('pointerleave', hidePointer);
+    field.addEventListener('pointermove', movePointer);
+    field.addEventListener('pointerdown', movePointer);
+    field.addEventListener('pointerleave', hidePointer);
 
     hud.locations.addEventListener('click', (event) => {
         if (event.target === hud.locations) closeLocations();
     });
 
-    loadGame();
+    const hasSavedGame = loadGame();
 
     if (!state.order) createOrder();
 
     renderLocationSlides();
     renderLocation();
     renderHud();
-    requestAnimationFrame(gameLoop);
+
+    hud.introStart.textContent = hasSavedGame ? 'Продовжити' : 'Старт';
+    hud.introStart.addEventListener('click', startGame);
 
     window.addEventListener('pagehide', saveGame);
 });

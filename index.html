@@ -10,7 +10,9 @@
     </head>
     <body>
         <div id="app">
-            <div class="pickup-ring" id="pickup-ring"></div>
+            <div class="field" id="field">
+                <div class="pickup-ring" id="pickup-ring"></div>
+            </div>
             <div class="hud">
                 <div class="hud__item">Кредити: <span id="hud-credits">0</span></div>
                 <div class="hud__item" id="hud-storage">
@@ -35,7 +37,6 @@
                 <button class="hud__item hud__button" id="hud-location">Локація: <span id="hud-location-name"></span></button>
             </div>
             <div class="shop" id="shop">
-                <button class="hud__item hud__button shop__toggle" id="shop-toggle" aria-expanded="true">Магазин<span class="shop__toggle-icon"></span></button>
                 <div class="shop__body">
                     <button class="hud__item hud__button shop__button" id="shop-storage">
                         <span class="shop__title">Склад +25</span>
@@ -78,6 +79,18 @@
                         <div class="swiper-button-next"></div>
                         <div class="swiper-pagination"></div>
                     </div>
+                </div>
+            </div>
+            <div class="intro is-open" id="intro">
+                <div class="intro__dialog">
+                    <h1 class="intro__title">Космічна шахта</h1>
+                    <ul class="intro__list">
+                        <li>Клікай по астероїдах — з них випадає руда.</li>
+                        <li>Наведи курсор на руду, щоб зібрати її на склад.</li>
+                        <li>Продавай руду й купуй кращий бур, дронів і більший склад.</li>
+                        <li>Виконуй замовлення та відкривай нові пояси астероїдів.</li>
+                    </ul>
+                    <button class="hud__item hud__button intro__start" id="intro-start">Старт</button>
                 </div>
             </div>
         </div>
