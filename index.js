@@ -28,6 +28,8 @@ window.addEventListener('DOMContentLoaded', () => {
         shopCollectorCost: document.getElementById('shop-collector-cost'),
         pickupRing: document.getElementById('pickup-ring'),
         locations: document.getElementById('locations'),
+        intro: document.getElementById('intro'),
+        introStart: document.getElementById('intro-start'),
         locationsClose: document.getElementById('locations-close'),
         locationsSwiper: document.getElementById('locations-swiper'),
         locationsSlides: document.getElementById('locations-slides'),
@@ -878,6 +880,13 @@ window.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(gameLoop);
     }
 
+    function startGame() {
+        hud.intro.classList.remove('is-open');
+
+        lastFrameTime = performance.now();
+        requestAnimationFrame(gameLoop);
+    }
+
     hud.sell.addEventListener('click', sellAllCargo);
     hud.shopStorage.addEventListener('click', buyStorageUpgrade);
     hud.shopDrill.addEventListener('click', buyDrillUpgrade);
@@ -911,7 +920,8 @@ window.addEventListener('DOMContentLoaded', () => {
     renderLocationSlides();
     renderLocation();
     renderHud();
-    requestAnimationFrame(gameLoop);
+
+    hud.introStart.addEventListener('click', startGame);
 
     window.addEventListener('pagehide', saveGame);
 });

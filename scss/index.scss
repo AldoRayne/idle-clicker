@@ -488,6 +488,61 @@ body {
     }
 }
 
+.intro {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: r(16);
+    background-color: rgba(3, 5, 12, 0.8);
+    font-family: system-ui, sans-serif;
+    color: #fff;
+
+    &.is-open {
+        display: flex;
+    }
+
+    &__dialog {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: r(440);
+        padding: r(28) r(32);
+        background-color: rgba(6, 10, 24, 0.95);
+        border: r(1) solid rgba(255, 255, 255, 0.15);
+        border-radius: r(12);
+
+        @include max-tablet {
+            padding: r(20);
+        }
+    }
+
+    &__title {
+        margin: 0 0 r(16);
+        font-size: r(28);
+
+        @include max-tablet {
+            font-size: r(22);
+        }
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: r(8);
+        margin: 0 0 r(24);
+        padding-left: r(20);
+        line-height: 1.4;
+    }
+
+    &__start {
+        width: 100%;
+        padding: r(12);
+        font-size: r(18);
+    }
+}
+
 #app.is-storage-full {
     .asteroid {
         cursor: not-allowed;

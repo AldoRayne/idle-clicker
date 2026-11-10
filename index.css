@@ -448,6 +448,58 @@ body {
   font-size: 1rem;
 }
 
+.intro {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(3, 5, 12, 0.8);
+  font-family: system-ui, sans-serif;
+  color: #fff;
+}
+.intro.is-open {
+  display: flex;
+}
+.intro__dialog {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 27.5rem;
+  padding: 1.75rem 2rem;
+  background-color: rgba(6, 10, 24, 0.95);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.75rem;
+}
+@media only screen and (max-width: 767px) {
+  .intro__dialog {
+    padding: 1.25rem;
+  }
+}
+.intro__title {
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
+}
+@media only screen and (max-width: 767px) {
+  .intro__title {
+    font-size: 1.375rem;
+  }
+}
+.intro__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+  padding-left: 1.25rem;
+  line-height: 1.4;
+}
+.intro__start {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1.125rem;
+}
+
 #app.is-storage-full .asteroid {
   cursor: not-allowed;
 }
