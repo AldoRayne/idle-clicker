@@ -77,6 +77,29 @@ body {
     }
 }
 
+.ore-drop {
+    position: absolute;
+    width: r(22);
+    height: r(22);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: ore-drop-blink 0.8s ease-in-out 2;
+}
+
+.pickup-ring {
+    position: absolute;
+    z-index: 5;
+    display: none;
+    transform: translate(-50%, -50%);
+    border: r(1) dashed rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    pointer-events: none;
+
+    &.is-visible {
+        display: block;
+    }
+}
+
 .hud {
     position: absolute;
     top: r(16);
@@ -217,13 +240,51 @@ body {
     @include max-tablet {
         top: auto;
         right: r(8);
-        bottom: r(8);
+        bottom: r(46);
         left: r(8);
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: r(6);
         min-width: 0;
         font-size: r(13);
+    }
+
+    &.is-collapsed &__body {
+        height: 0;
+        overflow: hidden;
+        visibility: hidden;
+    }
+
+    &__toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: r(8);
+    }
+
+    &__toggle-icon {
+        width: r(8);
+        height: r(8);
+        margin-top: r(4);
+        border-right: r(2) solid currentColor;
+        border-bottom: r(2) solid currentColor;
+        transform: rotate(-135deg);
+        transition: transform 0.2s ease-out;
+    }
+
+    &.is-collapsed &__toggle-icon {
+        margin-top: r(-4);
+        transform: rotate(45deg);
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: r(8);
+
+        @include max-tablet {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: r(6);
+        }
     }
 
     &__button {
@@ -248,6 +309,22 @@ body {
         @include max-tablet {
             white-space: normal;
         }
+    }
+}
+
+.new-game {
+    position: absolute;
+    right: r(16);
+    bottom: r(16);
+    z-index: 10;
+    padding: r(6) r(12);
+    font-family: system-ui, sans-serif;
+    font-size: r(13);
+    color: #fff;
+
+    @include max-tablet {
+        right: r(8);
+        bottom: r(8);
     }
 }
 
@@ -453,5 +530,11 @@ body {
 
     to {
         filter: brightness(1);
+    }
+}
+
+@keyframes ore-drop-blink {
+    50% {
+        opacity: 0.6;
     }
 }
