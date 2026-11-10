@@ -19,15 +19,45 @@ body {
 
 #app {
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+        'hud hud'
+        'field shop'
+        'field new-game';
+    gap: r(12);
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
+    padding: r(16);
+    overflow: hidden;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+
+    @include max-tablet {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
+        grid-template-areas:
+            'hud'
+            'field'
+            'shop'
+            'new-game';
+        gap: r(6);
+        padding: r(8);
+    }
+}
+
+.field {
+    position: relative;
+    grid-area: field;
     overflow: hidden;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    user-select: none;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    border: r(1) solid rgba(255, 255, 255, 0.15);
+    border-radius: r(12);
 }
 
 .asteroid {
@@ -101,11 +131,9 @@ body {
 }
 
 .hud {
-    position: absolute;
-    top: r(16);
-    left: r(16);
-    right: r(260);
+    position: relative;
     z-index: 10;
+    grid-area: hud;
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
@@ -115,9 +143,6 @@ body {
     color: #fff;
 
     @include max-tablet {
-        top: r(8);
-        left: r(8);
-        right: r(8);
         gap: r(6);
         font-size: r(14);
     }
@@ -188,13 +213,23 @@ body {
     }
 }
 
+#hud-storage {
+    position: relative;
+}
+
 .sell-panel {
+    position: absolute;
+    top: calc(100% + #{r(6)});
+    left: 0;
     display: none;
     flex-direction: column;
     gap: r(8);
-    margin-top: r(8);
-    padding-top: r(8);
-    border-top: r(1) solid rgba(255, 255, 255, 0.15);
+    box-sizing: border-box;
+    min-width: 100%;
+    padding: r(10) r(14);
+    background-color: rgba(6, 10, 24, 0.95);
+    border: r(1) solid rgba(255, 255, 255, 0.15);
+    border-radius: r(8);
     font-size: r(14);
 
     &.is-open {
@@ -225,10 +260,8 @@ body {
 }
 
 .shop {
-    position: absolute;
-    top: r(16);
-    right: r(16);
-    z-index: 10;
+    grid-area: shop;
+    align-self: start;
     display: flex;
     flex-direction: column;
     gap: r(8);
@@ -238,10 +271,6 @@ body {
     color: #fff;
 
     @include max-tablet {
-        top: auto;
-        right: r(8);
-        bottom: r(46);
-        left: r(8);
         gap: r(6);
         min-width: 0;
         font-size: r(13);
@@ -313,19 +342,13 @@ body {
 }
 
 .new-game {
-    position: absolute;
-    right: r(16);
-    bottom: r(16);
-    z-index: 10;
+    grid-area: new-game;
+    justify-self: end;
+    align-self: end;
     padding: r(6) r(12);
     font-family: system-ui, sans-serif;
     font-size: r(13);
     color: #fff;
-
-    @include max-tablet {
-        right: r(8);
-        bottom: r(8);
-    }
 }
 
 .order {
