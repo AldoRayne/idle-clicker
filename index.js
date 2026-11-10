@@ -446,7 +446,7 @@ window.addEventListener('DOMContentLoaded', () => {
         closeLocations();
     }
 
-    function spawnAsteroid({ type, size, x, y, speedX, speedY }) {
+    function spawnAsteroid({ type, size, x, y, speedX, speedY, hp = ASTEROID_HP[size] * getCurrentLocation().hpMultiplier }) {
         const asteroid = {
             type,
             size,
@@ -454,7 +454,7 @@ window.addEventListener('DOMContentLoaded', () => {
             y,
             speedX,
             speedY,
-            hp: ASTEROID_HP[size] * getCurrentLocation().hpMultiplier,
+            hp,
             el: null,
         };
 
@@ -548,12 +548,17 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function dropOre(type, amount, hitPoint) {
-        const { x, y } = getOreDropPoint(hitPoint);
+    function placeOreDrop({ type, amount, x, y }) {
         const oreDrop = { type, amount, x, y, el: null };
 
         state.oreDrops.push(oreDrop);
         renderNewOreDrop(oreDrop);
+    }
+
+    function dropOre(type, amount, hitPoint) {
+        const { x, y } = getOreDropPoint(hitPoint);
+
+        placeOreDrop({ type, amount, x, y });
     }
 
     function isOreDropInPickupRadius(oreDrop) {
@@ -788,6 +793,8 @@ window.addEventListener('DOMContentLoaded', () => {
             order: state.order,
             upgradeLevels: state.upgradeLevels,
             cargo: state.cargo,
+            asteroids: state.asteroids.map(({ el, ...asteroid }) => asteroid),
+            oreDrops: state.oreDrops.map(({ el, ...oreDrop }) => oreDrop),
         };
 
         try {
@@ -808,13 +815,23 @@ window.addEventListener('DOMContentLoaded', () => {
 
         if (!saveData) return false;
 
-        const { upgradeLevels, cargo, ...simpleValues } = saveData;
+        const { upgradeLevels, cargo, asteroids = [], oreDrops = [], ...simpleValues } = saveData;
 
         Object.assign(state, simpleValues);
         Object.assign(state.upgradeLevels, upgradeLevels);
         Object.assign(state.cargo, cargo);
 
         if (!LOCATIONS[state.locationIndex]) state.locationIndex = 0;
+
+        asteroids.forEach(spawnAsteroid);
+
+        oreDrops.forEach((oreDrop) => {
+            placeOreDrop({
+                ...oreDrop,
+                x: clamp(oreDrop.x, 0, field.clientWidth),
+                y: clamp(oreDrop.y, 0, field.clientHeight),
+            });
+        });
 
         return true;
     }
