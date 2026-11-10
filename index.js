@@ -803,10 +803,10 @@ window.addEventListener('DOMContentLoaded', () => {
         try {
             saveData = JSON.parse(localStorage.getItem(SAVE_KEY));
         } catch {
-            return;
+            return false;
         }
 
-        if (!saveData) return;
+        if (!saveData) return false;
 
         const { upgradeLevels, cargo, ...simpleValues } = saveData;
 
@@ -815,6 +815,8 @@ window.addEventListener('DOMContentLoaded', () => {
         Object.assign(state.cargo, cargo);
 
         if (!LOCATIONS[state.locationIndex]) state.locationIndex = 0;
+
+        return true;
     }
 
     function startNewGame() {
@@ -913,7 +915,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (event.target === hud.locations) closeLocations();
     });
 
-    loadGame();
+    const hasSavedGame = loadGame();
 
     if (!state.order) createOrder();
 
@@ -921,6 +923,7 @@ window.addEventListener('DOMContentLoaded', () => {
     renderLocation();
     renderHud();
 
+    hud.introStart.textContent = hasSavedGame ? 'Продовжити' : 'Старт';
     hud.introStart.addEventListener('click', startGame);
 
     window.addEventListener('pagehide', saveGame);
